@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MUSIC</title>
+  <link rel="icon" type="image/png" href="images/FAVICON.png" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #d8d8d8, #f0f0f0);
+      color: #333;
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgb(230, 230, 230);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #loading-screen img {
+      width: 420px;
+      height: auto;
+    }
+
+    #backup-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #a8a8a8;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 9998;
+    }
+
+    #backup-loading .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #555;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    #backup-loading .text {
+      font-size: 2rem;
+      color: #333;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    header {
+      width: 100%;
+      height: 80vh;
+      background: url("images/IMAGEM2.png") no-repeat center center/cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .cards-container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 90px;
+      padding: 40px;
+    }
+
+    .card {
+      width: 250px;
+      height: 350px;
+      background-color: #dddddd;
+      border-radius: 20px;
+      box-shadow: 5px 5px 10px #bebebe, -4px -4px 10px #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card.active {
+      transform: scale(1.05);
+    }
+
+    .text-explicativo {
+      background-color: white;
+      padding: 60px 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .texto {
+      max-width: 1000px;
+      font-size: 1.2rem;
+      text-align: justify;
+    }
+
+    #viewer-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 9997;
+    }
+
+    #viewer-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      position: relative;
+      cursor: crosshair;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    #viewer-content:hover {
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      transform: scale(1.02);
+    }
+
+    #viewer-text {
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    #close-viewer {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="loading-screen">
+    <img src="images/BLOCK-ICON.png" alt="Loading..." />
+  </div>
+
+  <div id="backup-loading">
+    <div class="spinner"></div>
+  </div>
+
+  <audio id="loading-audio" preload="auto">
+    <source src="loading-sound.mp3" type="audio/mpeg" />
+    Seu navegador não suporta áudio.
+  </audio>
+
+  <header></header>
+
+  <section class="cards-container">
+    <div class="card" data-type="guitarra">🎸</div>
+    <div class="card" data-type="producao">🎧</div>
+    <div class="card" data-type="teclado">🎹</div>
+  </section>
+
+  <section class="text-explicativo">
+    <div class="texto">
+      O som, quando bem construído, ultrapassa a função de ser apenas uma sequência de notas musicais...
+    </div>
+  </section>
+
+  <div id="viewer-modal">
+    <div id="viewer-content">
+      <span id="close-viewer">&times;</span>
+      <div id="viewer-text"></div>
+    </div>
+  </div>
+
+  <script>
+    const cards = document.querySelectorAll('.card');
+    const modal = document.getElementById('viewer-modal');
+    const modalText = document.getElementById('viewer-text');
+    const closeModal = document.getElementById('close-viewer');
+
+    const contents = {
+      guitarra: `<strong>🎸 Guitarra:</strong><br>
+        Tenho formação online em guitarra e experiência sólida tanto na elétrica quanto na acústica. Domino técnicas como palhetada alternada, bends, slides, harmônicos e improvisação em diversos estilos como rock, blues e pop.<br><br>
+        <strong>Instrumentos de Corda:</strong><br>
+        Além da guitarra, toco baixo elétrico e violão. Estudo a função rítmica e harmônica desses instrumentos em arranjos musicais. Busco sempre aplicar conhecimentos de teoria musical para enriquecer a prática em conjunto.`,
+
+      producao: `<strong>🎧 Produção:</strong><br>
+        Atuo com mixagem, equalização e criação de beats em softwares como FL Studio. Tenho familiaridade com plugins VST e construção de arranjos modernos voltados para trap, lo-fi e pop alternativo.`,
+
+      teclado: `<strong>🎹 Teclado:</strong><br>
+        Desenvolvo bases com acordes abertos e pads. Utilizo o teclado como apoio harmônico e para criação de texturas com sintetizadores. Tenho noções de harmonia funcional aplicadas à composição.`  
+    };
+
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        const type = card.dataset.type;
+        modalText.innerHTML = contents[type] || "Conteúdo não encontrado.";
+        modal.style.display = 'flex';
+      });
+    });
+
+    closeModal.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const audio = document.getElementById('loading-audio');
+      const loadingScreen = document.getElementById('loading-screen');
+      const loadingImage = loadingScreen.querySelector('img');
+      const backupLoading = document.getElementById('backup-loading');
+
+      loadingImage.src = "images/BLOCK-ICON.png";
+
+      if (audio) {
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            document.body.addEventListener('click', () => audio.play(), { once: true });
+          });
+        }
+      }
+
+      setTimeout(() => {
+        loadingImage.src = "images/LOAD-ICON.png";
+      }, 1500);
+
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+        backupLoading.style.display = 'flex';
+      }, 3000);
+
+      setTimeout(() => {
+        backupLoading.style.display = 'none';
+      }, 5000);
+
+      setTimeout(() => {
+        document.querySelector('.cards-container').scrollIntoView({ behavior: 'smooth' });
+        const cards = document.querySelectorAll('.card');
+        if (cards[1]) {
+          cards[1].classList.add('active');
+        }
+      }, 5000);
+
+      setTimeout(() => {
+        const cards = document.querySelectorAll('.card');
+        if (cards[1]) {
+          cards[1].classList.remove('active');
+        }
+      }, 7000);
+    });
+
+    // Modal arrastável
+    let isDragging = false;
+    let offsetX, offsetY;
+    const viewerContent = document.getElementById('viewer-content');
+
+    viewerContent.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      offsetX = e.clientX - viewerContent.offsetLeft;
+      offsetY = e.clientY - viewerContent.offsetTop;
+      viewerContent.style.position = 'absolute';
+      viewerContent.style.zIndex = '10000';
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (isDragging) {
+        viewerContent.style.left = `${e.clientX - offsetX}px`;
+        viewerContent.style.top = `${e.clientY - offsetY}px`;
+      }
+    });
+  </script>
+</body>
+</html>
