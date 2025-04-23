@@ -268,13 +268,14 @@
         backupLoading.style.display = 'flex';
       }, 3000);
 
-      // Esconder backup e mostrar conteúdo
+      // Esconder backup e centralizar nos cards
       setTimeout(() => {
         backupLoading.style.display = 'none';
-        document.querySelector('header').scrollIntoView({ behavior: 'smooth' });
+        document.querySelector('.cards-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (cards[1]) cards[1].classList.add('active');
       }, 5000);
 
+      // Remover destaque do card
       setTimeout(() => {
         if (cards[1]) cards[1].classList.remove('active');
       }, 7000);
